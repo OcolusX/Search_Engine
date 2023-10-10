@@ -5,6 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.services.RepositoryService;
@@ -16,9 +17,9 @@ import java.util.concurrent.RecursiveAction;
 public class ParsingPageAction extends RecursiveAction {
 
     private final Site site;
-    private final RepositoryService repositoryService;
-
     private final String path;
+    private final RepositoryService repositoryService;
+    private final Boolean recursive;
 
     private final List<ParsingPageAction> tasks = new LinkedList<>();
 
@@ -27,6 +28,14 @@ public class ParsingPageAction extends RecursiveAction {
         this.site = site;
         this.path = path;
         this.repositoryService = repositoryService;
+        this.recursive = true;
+    }
+
+    public ParsingPageAction(Site site, String path, RepositoryService repositoryService, Boolean recursive) {
+        this.site = site;
+        this.path = path;
+        this.repositoryService = repositoryService;
+        this.recursive = recursive;
     }
 
     /**
@@ -36,9 +45,8 @@ public class ParsingPageAction extends RecursiveAction {
     protected void compute() {
         try {
             Thread.sleep(3000);
-            // Получаем абсолютную ссылку для доступа к данной странице
-            String url = site.getUrl() + path;
 
+            String url = site.getUrl() + path;
             Connection.Response response = getConnection(url).execute();
             Page page = new Page();
             page.setCode(response.statusCode());
@@ -47,13 +55,24 @@ public class ParsingPageAction extends RecursiveAction {
 
             Document document = response.parse();
             page.setContent(document.toString());
-            if (!repositoryService.savePage(page, site.getId()))
-                return;
+
+            page = repositoryService.savePage(page, site.getId());
+
+            HtmlLemmaFinder finder = HtmlLemmaFinder.getInstance();
+            String text = finder.clearHtmlTags(page.getContent());
+            Map<String, Integer> lemmasMap = finder.collectLemmas(text);
+            repositoryService.saveLemmasMap(lemmasMap, page);
+
             Elements elements = document.select("a");
             for (Element element : elements) {
-                String href = element.attr("href");
-                if (!href.isEmpty() && href.charAt(0) == '/') {
-                    ParsingPageAction parsingPageAction = new ParsingPageAction(site, href, repositoryService);
+                String link = element.absUrl("href");
+                if (checkLink(link)) {
+                    String path = link.replace(site.getUrl(), "");
+                    if(repositoryService.isPageExists(path, site.getId()))
+                        continue;
+
+                    ParsingPageAction parsingPageAction =
+                            new ParsingPageAction(site, path, repositoryService);
                     tasks.add(parsingPageAction);
                     parsingPageAction.fork();
                 }
@@ -79,5 +98,16 @@ public class ParsingPageAction extends RecursiveAction {
                 .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
                 .referrer("http://www.google.com")
                 .followRedirects(true);
+    }
+
+
+    private boolean checkLink(String link) {
+        return link.startsWith(site.getUrl())
+                && !link.contains("pdf")
+                && !link.contains("jpg")
+                && !link.contains("png")
+                && !link.contains("php")
+                && !link.contains("img")
+                && !link.contains("#");
     }
 }

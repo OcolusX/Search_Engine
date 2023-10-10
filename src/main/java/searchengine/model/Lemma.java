@@ -3,10 +3,11 @@ package searchengine.model;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.persistence.Index;
 
 @Entity
 @Data
-@Table(name = "lemmas")
+@Table(name = "lemmas", indexes = {@Index(name = "lemmaIndex", columnList = "lemma", unique = true)})
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

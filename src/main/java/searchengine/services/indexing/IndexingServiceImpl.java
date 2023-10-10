@@ -1,32 +1,39 @@
 package searchengine.services.indexing;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import searchengine.config.SitesList;
+import searchengine.dto.indexing.HtmlLemmaFinder;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.indexing.ParsingPageAction;
 import searchengine.model.IndexingStatus;
+import searchengine.model.Lemma;
+import searchengine.model.Page;
 import searchengine.model.Site;
+import searchengine.repository.IndexRepository;
 import searchengine.services.RepositoryService;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class IndexingServiceImpl implements IndexingService {
 
+    Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
+
     private ExecutorService executorService;
     private final RepositoryService repositoryService;
     private final SitesList sitesList;
-
     private final List<ForkJoinPool> pools;
     private boolean indexing = false;
-
-
-
-
 
 
     /**
@@ -47,7 +54,7 @@ public class IndexingServiceImpl implements IndexingService {
 
         executorService = Executors.newFixedThreadPool(sites.size());
         for (Site site : sites) {
-            Site finalSite = repositoryService.updateStatusSite(site, IndexingStatus.INDEXING);;
+            Site finalSite = repositoryService.updateStatusSite(site, IndexingStatus.INDEXING);
             executorService.submit(() -> {
                 ForkJoinPool parsingPagePool = new ForkJoinPool();
                 try {
@@ -91,21 +98,34 @@ public class IndexingServiceImpl implements IndexingService {
         return new IndexingResponse(true, "");
     }
 
-    /**
-     * @return - список сайтов, прописанных в файле конфигурации
-     */
+    public IndexingResponse indexPage(String url) {
+        List<Site> sites = getSites();
+        for(Site site : sites) {
+            Matcher matcher = Pattern.compile(site.getUrl()).matcher(url);
+            if(matcher.find()) {
+                site = repositoryService.updateStatusSite(site, IndexingStatus.INDEXING);
+                String path = url.substring(matcher.end() - 1);
+                repositoryService.deleteAllByPagePathAndSiteId(path, site.getId());
+
+                ParsingPageAction parsingPageAction = new ParsingPageAction(site, path, repositoryService, false);
+                parsingPageAction.fork();
+                parsingPageAction.join();
+
+                Optional<Page> byPathAndSiteId =
+                        repositoryService.getPageRepository().findByPathAndSiteId(path, site.getId());
+            }
+        }
+        return null;
+    }
+
+
     private List<Site> getSites() {
         List<Site> sites = new LinkedList<>();
         for (searchengine.config.Site configSite : sitesList.getSites()) {
-            Site byName = repositoryService.getSiteRepository().findByName(configSite.getName());
-            if (byName == null) {
                 Site site = new Site();
                 site.setName(configSite.getName());
                 site.setUrl(configSite.getUrl());
                 sites.add(site);
-            } else {
-                sites.add(byName);
-            }
         }
         return sites;
     }

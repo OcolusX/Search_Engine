@@ -1,9 +1,8 @@
 package searchengine.controllers;
 
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import searchengine.dto.indexing.IndexingResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.RepositoryService;
@@ -40,4 +39,9 @@ public class ApiController {
     public ResponseEntity<IndexingResponse> stopIndexing() {
         return ResponseEntity.ok(indexingService.stopIndexing());
     }
+
+//    @PostMapping("/indexPage")
+//    public ResponseEntity<IndexingResponse> indexPage(@RequestParam("url") String url) {
+//
+//    }
 }

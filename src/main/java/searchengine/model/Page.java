@@ -14,7 +14,7 @@ public class Page {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "site_id", referencedColumnName = "id", nullable = false)
     private Site site;
 

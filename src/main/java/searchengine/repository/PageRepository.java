@@ -6,17 +6,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import searchengine.model.Page;
-import searchengine.model.Site;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface PageRepository extends JpaRepository<Page, Integer> {
 
+    @Query(value = "select p from Page p where p.site.id =:site_id")
+    List<Page> findAllBySiteId(@Param("site_id") Integer siteId);
+
     @Modifying
     @Query(value = "delete from Page p where p.site.id =:site_id")
-    void deleteAllBySite_id(@Param("site_id") Integer siteId);
+    void deleteAllBySiteId(@Param("site_id") Integer siteId);
 
     @Query(value = "select p from Page p where p.path =:path and p.site.id =:site_id")
-    Optional<Page> findByPathAndSite_id(@Param("path") String path, @Param("site_id") Integer siteId);
+    Optional<Page> findByPathAndSiteId(@Param("path") String path, @Param("site_id") Integer siteId);
 }

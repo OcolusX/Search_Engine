@@ -6,8 +6,9 @@ import org.springframework.stereotype.Repository;
 import searchengine.model.Site;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SiteRepository extends JpaRepository<Site, Integer> {
-    Site findByName(String name);
+    Optional<Site> findByName(String name);
 }

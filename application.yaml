@@ -22,3 +22,10 @@ indexing-settings:
 #      name: Skillbox
     - url: https://www.playback.ru
       name: PlayBack.Ru
+
+#logging:
+#  level:
+#    hibernate: ERROR
+#  file.name: app.log
+#  pattern:
+#    file: '%d{yyyy-MMM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{15} - %msg%n'
