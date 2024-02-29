@@ -7,7 +7,7 @@ import javax.persistence.Index;
 
 @Entity
 @Data
-@Table(name = "lemmas", indexes = {@Index(name = "lemmaIndex", columnList = "lemma", unique = true)})
+@Table(name = "lemmas", indexes = {@Index(name = "lemmaIndex", columnList = "site_id, lemma", unique = true)})
 public class Lemma {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

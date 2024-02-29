@@ -63,6 +63,7 @@ public class IndexingServiceImpl implements IndexingService {
                     parsingPagePool.invoke(parsingPageAction);
                     repositoryService.updateStatusSite(finalSite, IndexingStatus.INDEXED);
                 } catch (RuntimeException e) {
+                    //TODO сделать нормальную обработку исключений
                     e.printStackTrace();
                     if(indexing) {
                         finalSite.setLastError(e.getMessage());
@@ -98,6 +99,7 @@ public class IndexingServiceImpl implements IndexingService {
         return new IndexingResponse(true, "");
     }
 
+    @Override
     public IndexingResponse indexPage(String url) {
         List<Site> sites = getSites();
         for(Site site : sites) {
@@ -105,17 +107,14 @@ public class IndexingServiceImpl implements IndexingService {
             if(matcher.find()) {
                 site = repositoryService.updateStatusSite(site, IndexingStatus.INDEXING);
                 String path = url.substring(matcher.end() - 1);
-                repositoryService.deleteAllByPagePathAndSiteId(path, site.getId());
+                repositoryService.deletePage(path, site.getId());
 
                 ParsingPageAction parsingPageAction = new ParsingPageAction(site, path, repositoryService, false);
                 parsingPageAction.fork();
                 parsingPageAction.join();
-
-                Optional<Page> byPathAndSiteId =
-                        repositoryService.getPageRepository().findByPathAndSiteId(path, site.getId());
             }
         }
-        return null;
+        return new IndexingResponse(true, "");
     }
 
 

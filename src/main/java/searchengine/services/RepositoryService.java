@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @Getter
@@ -20,9 +21,7 @@ public class RepositoryService {
 
     private final PageRepository pageRepository;
     private final SiteRepository siteRepository;
-
     private final LemmaRepository lemmaRepository;
-
     private final IndexRepository indexRepository;
 
     public RepositoryService(PageRepository pageRepository,
@@ -56,8 +55,20 @@ public class RepositoryService {
     }
 
     @Transactional
-    public void deleteAllByPagePathAndSiteId(String path, Integer siteId) {
+    public void deletePage(String path, Integer siteId) {
         Optional<Page> byPathAndSiteId = pageRepository.findByPathAndSiteId(path, siteId);
+        if (byPathAndSiteId.isPresent()) {
+            Integer id = byPathAndSiteId.get().getId();
+            List<Lemma> lemmas = indexRepository.findAllByPageId(id).stream().map(Index::getLemma).toList();
+            for (Lemma lemma : lemmas) {
+                //TODO Добавить логику в случае, если frequency <= 0
+                lemma.setFrequency(lemma.getFrequency() - 1);
+            }
+            lemmaRepository.saveAll(lemmas);
+
+            indexRepository.deleteAllByPageId(id);
+            pageRepository.deleteById(id);
+        }
         byPathAndSiteId.ifPresent(value -> indexRepository.deleteAllByPageId(value.getId()));
     }
 
@@ -71,7 +82,7 @@ public class RepositoryService {
     @Transactional
     public synchronized Page savePage(Page page, Integer siteId) {
         Optional<Page> byPath = pageRepository.findByPathAndSiteId(page.getPath(), siteId);
-        if(byPath.isPresent()) {
+        if (byPath.isPresent()) {
             return byPath.get();
         }
         page = pageRepository.save(page);
@@ -105,13 +116,15 @@ public class RepositoryService {
 
     @Transactional
     public synchronized void saveLemmasMap(Map<String, Integer> lemmasMap, Page page) {
+        Integer siteId = page.getSite().getId();
         for (String key : lemmasMap.keySet()) {
             Float rank = lemmasMap.get(key) + 0f;
-            Optional<Lemma> byLemma = lemmaRepository.findByLemma(key);
+            Optional<Lemma> byLemma = lemmaRepository.findByLemmaAndSiteId(key, siteId);
             if (byLemma.isPresent()) {
                 Lemma lemma = byLemma.get();
 
-                Optional<Index> byPageIdAndLemmaId = indexRepository.findByPageIdAndLemmaId(page.getId(), lemma.getId());
+                Optional<Index> byPageIdAndLemmaId =
+                        indexRepository.findByPageIdAndLemmaId(page.getId(), lemma.getId());
                 if (byPageIdAndLemmaId.isPresent()) {
                     Index index = byPageIdAndLemmaId.get();
                     if (!index.getRank().equals(rank)) {

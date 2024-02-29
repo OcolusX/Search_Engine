@@ -1,28 +1,29 @@
 package searchengine.controllers;
 
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.indexing.IndexingResponse;
+import searchengine.dto.search.SearchResponse;
 import searchengine.dto.statistics.StatisticsResponse;
-import searchengine.services.RepositoryService;
-import searchengine.services.StatisticsService;
+import searchengine.services.search.SearchService;
+import searchengine.services.statistics.StatisticsService;
 import searchengine.services.indexing.IndexingService;
-import searchengine.services.indexing.IndexingServiceImpl;
 
 @RestController
 @RequestMapping("/api")
 public class ApiController {
 
     private final StatisticsService statisticsService;
-    private final RepositoryService repositoryService;
-
     private final IndexingService indexingService;
+    private final SearchService searchService;
 
-    public ApiController(StatisticsService statisticsService, RepositoryService repositoryService, IndexingService indexingService) {
+    public ApiController(
+            StatisticsService statisticsService,
+            IndexingService indexingService,
+            SearchService searchService) {
         this.statisticsService = statisticsService;
-        this.repositoryService = repositoryService;
         this.indexingService = indexingService;
+        this.searchService = searchService;
     }
 
     @GetMapping("/statistics")
@@ -40,8 +41,17 @@ public class ApiController {
         return ResponseEntity.ok(indexingService.stopIndexing());
     }
 
-//    @PostMapping("/indexPage")
-//    public ResponseEntity<IndexingResponse> indexPage(@RequestParam("url") String url) {
-//
-//    }
+    @PostMapping("/indexPage")
+    public ResponseEntity<IndexingResponse> indexPage(@RequestParam("url") String url) {
+        return ResponseEntity.ok(indexingService.indexPage(url));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<SearchResponse> search(
+            @RequestParam("query") String query,
+            @RequestParam(name = "site", defaultValue = "") String siteUrl,
+            @RequestParam(name = "offset", defaultValue = "0") Integer offset,
+            @RequestParam(name = "limit", defaultValue = "20") Integer limit) {
+        return ResponseEntity.ok(searchService.search(query, siteUrl, offset, limit));
+    }
 }

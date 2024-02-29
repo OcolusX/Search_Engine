@@ -5,6 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.dao.DataIntegrityViolationException;
 import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
@@ -12,10 +13,10 @@ import searchengine.services.RepositoryService;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveAction;
 
 public class ParsingPageAction extends RecursiveAction {
-
     private final Site site;
     private final String path;
     private final RepositoryService repositoryService;
@@ -63,6 +64,9 @@ public class ParsingPageAction extends RecursiveAction {
             Map<String, Integer> lemmasMap = finder.collectLemmas(text);
             repositoryService.saveLemmasMap(lemmasMap, page);
 
+            if(!recursive)
+                return;
+
             Elements elements = document.select("a");
             for (Element element : elements) {
                 String link = element.absUrl("href");
@@ -78,8 +82,11 @@ public class ParsingPageAction extends RecursiveAction {
                 }
             }
 
-        } catch (IOException | InterruptedException e) {
-            throw new RuntimeException(e);
+        } catch (IOException | DataIntegrityViolationException e) {
+            e.printStackTrace();
+        }
+        catch (InterruptedException e) {
+            throw new RuntimeException();
         }
         for (ParsingPageAction task : tasks) {
             task.join();

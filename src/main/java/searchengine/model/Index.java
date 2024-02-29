@@ -6,7 +6,10 @@ import javax.persistence.*;
 
 @Entity
 @Data
-@Table(name = "indexes")
+@Table(
+        name = "indexes",
+        indexes = {@javax.persistence.Index(name = "page_lemma", columnList = "page_id, lemma_id", unique = true)}
+)
 public class Index {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -20,6 +20,8 @@ public interface PageRepository extends JpaRepository<Page, Integer> {
     @Query(value = "delete from Page p where p.site.id =:site_id")
     void deleteAllBySiteId(@Param("site_id") Integer siteId);
 
-    @Query(value = "select p from Page p where p.path =:path and p.site.id =:site_id")
+    @Query(value = "select p from Page p where p.site.id =:site_id and p.path =:path")
     Optional<Page> findByPathAndSiteId(@Param("path") String path, @Param("site_id") Integer siteId);
+
+    long countBySiteId(Integer siteId);
 }
