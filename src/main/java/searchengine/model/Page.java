@@ -1,9 +1,9 @@
 package searchengine.model;
 
+import jakarta.persistence.*;
+import jakarta.persistence.Index;
 import lombok.Data;
 
-import javax.persistence.*;
-import javax.persistence.Index;
 
 @Entity
 @Data

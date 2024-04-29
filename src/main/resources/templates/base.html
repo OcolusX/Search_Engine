@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(content)">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>News KMD</title>
+    <meta name="description" content="News Key Media Discover">
+
+    <link rel="preload" href="/css/fonts/Montserrat/Montserrat-SemiBold.woff2" as="font" crossorigin="anonymous">
+    <link rel="preload" href="/css/fonts/Montserrat/Montserrat-Light.woff2" as="font" crossorigin="anonymous">
+    <link rel="preload" href="/css/fonts/Montserrat/Montserrat-Medium.woff2" as="font" crossorigin="anonymous">
+    <link rel="preload" href="/css/fonts/Montserrat/Montserrat-ExtraBold.woff2" as="font" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/fonts.css?v=82368483">
+    <link rel="stylesheet" href="/css/basic.css?v=82368483">
+    <link rel="stylesheet" href="/css/extra.css?v=82368483">
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+    <link rel="stylesheet" th:href="@{/css/bootstrap.css}" />
+    <link rel="icon" href="/images/icons/search.svg" type="image/svg+xml">
+
+</head>
+<body>
+<!-- Navbar -->
+
+<ul>
+    <li><a class="active" th:href="@{/}">News KMD</a></li>
+    <li><a th:href="@{/sign-up}">Sign Up</a></li>
+
+</ul>
+
+<!-- Navbar End -->
+
+
+<div th:replace="${content}">
+
+</div>
+
+</div>
+
+
+</body>
+</html>

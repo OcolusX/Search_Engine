@@ -1,14 +1,13 @@
 package searchengine.model;
 
+import jakarta.persistence.*;
 import lombok.Data;
-
-import javax.persistence.*;
 
 @Entity
 @Data
 @Table(
         name = "indexes",
-        indexes = {@javax.persistence.Index(name = "page_lemma", columnList = "page_id, lemma_id", unique = true)}
+        indexes = {@jakarta.persistence.Index(name = "page_lemma", columnList = "page_id, lemma_id", unique = true)}
 )
 public class Index {
     @Id

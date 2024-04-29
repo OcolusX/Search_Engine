@@ -2,10 +2,11 @@ package searchengine.services.search;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import searchengine.dto.indexing.HtmlLemmaFinder;
+import searchengine.parsing.HtmlLemmaFinder;
 import searchengine.dto.search.SearchResponse;
 import searchengine.model.Index;
 import searchengine.model.Lemma;
+import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.services.RepositoryService;
 
@@ -44,10 +45,12 @@ public class SearchServiceImpl implements SearchService {
         if (siteId == -1) {
             lemmaList.addAll(repositoryService.getLemmaRepository().findAllByLemmasList(lemmas));
         } else {
-//            lemmaList.addAll(repositoryService.getLemmaRepository().findAllByLemmasListAndSiteId(lemmas, siteId));
+            lemmaList.addAll(repositoryService.getLemmaRepository().findAllByLemmasListAndSiteId(lemmas, siteId));
         }
 
+        //TODO исправить систему поиска
         List<Index> indexList = repositoryService.getIndexRepository().findAllByLemma(lemmaList.get(0));
+        List<Page> pageList = indexList.stream().map(Index::getPage).toList();
         Iterator<Lemma> iterator = lemmaList.iterator();
         iterator.next();
         while(iterator.hasNext()) {
@@ -59,6 +62,11 @@ public class SearchServiceImpl implements SearchService {
         //TODO добавить ошибку
         if(indexList.isEmpty()) {
             return new SearchResponse(false, "");
+        }
+
+        for(Index i : indexList) {
+            Page page = i.getPage();
+
         }
 
 

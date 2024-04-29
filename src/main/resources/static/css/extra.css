@@ -101,7 +101,7 @@
   cursor: pointer;
   min-width: 30px;
   height: 30px;
-  background: url("../img/icons/arrow_hide.svg") center center no-repeat;
+  background: url("../images/icons/arrow_hide.svg") center center no-repeat;
   background-size: auto 15px;
   -webkit-transform: rotate(180deg);
           transform: rotate(180deg);
@@ -130,6 +130,11 @@
   overflow: hidden;
   margin-bottom: 43px;
 }
+.Middle-center {
+    width: 30%;
+      margin-left: auto;
+      margin-right: auto;
+}
 .Middle:before,
 .Middle:after {
   content: "";
@@ -157,7 +162,7 @@
 .Middle-top {
   padding: 20px 0 20px;
   margin-bottom: 20px;
-  background: #177db8 url("../img/bg/books.png") left center repeat-x;
+  background: #177db8 url("../images/bg/books.png") left center repeat-x;
   min-height: 130px;
   display: flex;
   align-items: center;
@@ -185,7 +190,7 @@
   position: absolute;
   content: '';
   display: block;
-  background: url("../img/bg/entry.jpg") center center no-repeat;
+  background: url("../images/bg/entry.jpg") center center no-repeat;
   background-size: cover;
   left: 0;
   right: 0;
@@ -196,7 +201,7 @@
 }
 @media screen and (max-width: 480px) {
   .Middle_form:after {
-    background: url("../img/bg/entry_phone.jpg") center center no-repeat;
+    background: url("../images/bg/entry_phone.jpg") center center no-repeat;
   }
 }
 .Middle_form:before {
@@ -747,15 +752,15 @@
   margin-left: 15px;
 }
 .Statistics-status_pause {
-  background: url("../img/icons/pause.svg") 0 center no-repeat;
+  background: url("../images/icons/pause.svg") 0 center no-repeat;
   background-size: auto 20px;
 }
 .Statistics-status_cancel {
-  background: url("../img/icons/cancel.svg") 0 center no-repeat;
+  background: url("../images/icons/cancel.svg") 0 center no-repeat;
   background-size: auto 20px;
 }
 .Statistics-status_checked {
-  background: url("../img/icons/checked.svg") 0 center no-repeat;
+  background: url("../images/icons/checked.svg") 0 center no-repeat;
   background-size: auto 20px;
 }
 .Statistics-option {

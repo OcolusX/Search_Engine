@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{base::layout(~{::section})}">
+<head>
+    <meta charset="UTF-8"/>
+
+    <title>Document</title>
+</head>
+<body>
+<section class="center">
+    <div class="Middle-center">
+        <div class="Middle">
+            <div class="wrap">
+                <main class="Tabs Tabs_column Middle-main">
+                    <div class="Tabs-wrap">
+                        <div class="Section">
+                            <form class="form form_close" th:action="@{/auth/sign-up}" method="post">
+
+                                <h1>Sign Up</h1>
+
+
+                                Username: <input class="form-input" type="text" name="username"
+                                                 autocomplete="new-password"
+                                                 placeholder="Enter Your Username"
+                                                 required><br><br>
+
+                                Password: <input class="form-input" type="password" name="password"
+                                                 autocomplete="new-password"
+                                                 placeholder="Enter Your Password"
+                                                 required><br><br>
+
+                                Email: <input class="form-input" type="email" name="email"
+                                              autocomplete="new-password"
+                                              placeholder="Enter Your Email"
+                                              required><br><br>
+
+                                <input class="btn btn_primary form-btn" type="submit" value="Sign-up">
+
+                            </form>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+    <br>
+</section>
+</body>
+</html>

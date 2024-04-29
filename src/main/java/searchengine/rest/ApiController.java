@@ -1,5 +1,7 @@
-package searchengine.controllers;
+package searchengine.rest;
 
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.indexing.IndexingResponse;
@@ -10,21 +12,13 @@ import searchengine.services.statistics.StatisticsService;
 import searchengine.services.indexing.IndexingService;
 
 @RestController
-@RequestMapping("/api")
+@RequiredArgsConstructor
+@RequestMapping("/user/api")
 public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
     private final SearchService searchService;
-
-    public ApiController(
-            StatisticsService statisticsService,
-            IndexingService indexingService,
-            SearchService searchService) {
-        this.statisticsService = statisticsService;
-        this.indexingService = indexingService;
-        this.searchService = searchService;
-    }
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {

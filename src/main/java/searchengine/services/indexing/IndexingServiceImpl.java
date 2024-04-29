@@ -4,21 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import searchengine.config.SitesList;
-import searchengine.dto.indexing.HtmlLemmaFinder;
+import searchengine.config.site.SitesList;
 import searchengine.dto.indexing.IndexingResponse;
-import searchengine.dto.indexing.ParsingPageAction;
+import searchengine.parsing.ParsingPageAction;
 import searchengine.model.IndexingStatus;
-import searchengine.model.Lemma;
-import searchengine.model.Page;
 import searchengine.model.Site;
-import searchengine.repository.IndexRepository;
 import searchengine.services.RepositoryService;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -120,7 +114,7 @@ public class IndexingServiceImpl implements IndexingService {
 
     private List<Site> getSites() {
         List<Site> sites = new LinkedList<>();
-        for (searchengine.config.Site configSite : sitesList.getSites()) {
+        for (searchengine.config.site.Site configSite : sitesList.getSites()) {
                 Site site = new Site();
                 site.setName(configSite.getName());
                 site.setUrl(configSite.getUrl());

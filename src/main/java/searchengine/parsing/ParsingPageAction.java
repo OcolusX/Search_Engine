@@ -1,4 +1,4 @@
-package searchengine.dto.indexing;
+package searchengine.parsing;
 
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -6,14 +6,12 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.dao.DataIntegrityViolationException;
-import searchengine.model.Lemma;
 import searchengine.model.Page;
 import searchengine.model.Site;
 import searchengine.services.RepositoryService;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RecursiveAction;
 
 public class ParsingPageAction extends RecursiveAction {

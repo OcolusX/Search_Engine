@@ -7,12 +7,16 @@ spring:
     password: 2546
     url: jdbc:mysql://localhost:3306/search_engine_test?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
   jpa:
+    defer-datasource-initialization: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
     show-sql: true
+  sql:
+    init:
+      mode: never
 
 indexing-settings:
   sites:
@@ -23,9 +27,8 @@ indexing-settings:
     - url: https://www.playback.ru
       name: PlayBack.Ru
 
-#logging:
-#  level:
-#    hibernate: ERROR
-#  file.name: app.log
-#  pattern:
-#    file: '%d{yyyy-MMM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{15} - %msg%n'
+jwt:
+  secret:
+    key:
+      access: +XcBbJEjbqbx9aZ+WKItBAhfq6yszfdZ7WDjaH/ukFg=
+      refresh: yynwwLF6Fgs9Sz4Jiq2nnzlHsv/C7wCY4GB8+pW97D8=
