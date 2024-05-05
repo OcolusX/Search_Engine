@@ -2,18 +2,18 @@ package searchengine.dto.jwt;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@Builder
-@Schema(description = "Ответ с токеном доступа и рефреш токеном")
+@NoArgsConstructor
+@Schema(description = "Ответ с токенами при аутентификации")
 public class JwtAuthenticationResponse {
 
-    @Schema(description = "Токен доступа", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ...")
+    @Schema(description = "Access токен")
     private String accessToken;
 
-    @Schema(description = "Refresh токен", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJ...")
+    @Schema(description = "Refresh токен")
     private String refreshToken;
 }

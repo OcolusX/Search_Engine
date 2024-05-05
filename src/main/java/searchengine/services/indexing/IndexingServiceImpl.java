@@ -1,5 +1,6 @@
 package searchengine.services.indexing;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +22,15 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 public class IndexingServiceImpl implements IndexingService {
 
-    Logger logger = LoggerFactory.getLogger(IndexingServiceImpl.class);
+    public static final String START_INDEXING_ERROR = "Индексация уже запущена";
+    public static final String STOP_INDEXING_ERROR = "Индексация не запущена";
 
     private ExecutorService executorService;
     private final RepositoryService repositoryService;
     private final SitesList sitesList;
     private final List<ForkJoinPool> pools;
+
+    @Getter
     private boolean indexing = false;
 
 
@@ -39,7 +43,7 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     public IndexingResponse startIndexing() {
         if(indexing) {
-            return new IndexingResponse(false, IndexingResponse.START_INDEXING_ERROR);
+            return new IndexingResponse(false, START_INDEXING_ERROR);
         }
 
         indexing = true;
@@ -76,7 +80,7 @@ public class IndexingServiceImpl implements IndexingService {
     @Override
     public IndexingResponse stopIndexing() {
         if (!indexing) {
-            return new IndexingResponse(false, IndexingResponse.STOP_INDEXING_ERROR);
+            return new IndexingResponse(false, STOP_INDEXING_ERROR);
         }
         indexing = false;
         for(ForkJoinPool pool : pools) {
@@ -123,7 +127,4 @@ public class IndexingServiceImpl implements IndexingService {
         return sites;
     }
 
-    public boolean isIndexing() {
-        return indexing;
-    }
 }

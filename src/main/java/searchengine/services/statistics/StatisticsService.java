@@ -5,5 +5,5 @@ import searchengine.dto.statistics.StatisticsResponse;
 
 @Service
 public interface StatisticsService {
-    StatisticsResponse getStatistics();
+    StatisticsResponse getStatistics(boolean isAdmin);
 }

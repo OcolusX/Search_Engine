@@ -1,18 +1,20 @@
 package searchengine.dto.indexing;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public  class IndexingResponse {
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(description = "Ответ при запуске/остановке индексации")
+public class IndexingResponse {
+
+    @Schema(description = "Результат запуска/остановки индексации")
     private boolean result;
 
+    @Schema(description = "Текст ошибки")
     private String error;
 
-    public static String START_INDEXING_ERROR = "Индексация уже запущена";
-    public static String STOP_INDEXING_ERROR = "Индексация не запущена";
-
-    public IndexingResponse(boolean result, String error) {
-        this.result = result;
-        this.error = error;
-    }
 }

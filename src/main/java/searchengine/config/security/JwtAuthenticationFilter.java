@@ -1,4 +1,4 @@
-package searchengine.config;
+package searchengine.config.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import searchengine.exception.UserException;
+import searchengine.services.HttpCookieService;
 import searchengine.services.authentication.JwtService;
 import searchengine.services.user.UserService;
 
@@ -25,6 +26,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    public static final String BEARER_PREFIX = "Bearer ";
+    public static final String HEADER_NAME = "Authorization";
+
     private final JwtService jwtService;
     private final UserService userService;
 
@@ -33,25 +37,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
-    ) throws ServletException, IOException{
+    ) throws ServletException, IOException {
 
         String accessToken = null;
-        Cookie[] cookies = request.getCookies();
 
-        if(cookies == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        for(Cookie cookie : cookies) {
-            if(cookie.getName().equals(JwtService.ACCESS_COOKIE_NAME)) {
-                accessToken = cookie.getValue();
+        String authHeader = request.getHeader(HEADER_NAME);
+        if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, BEARER_PREFIX)) {
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals(HttpCookieService.ACCESS_COOKIE_NAME)) {
+                        accessToken = cookie.getValue();
+                        break;
+                    }
+                }
             }
-        }
 
-        if (accessToken == null) {
+            if (accessToken == null) {
                 filterChain.doFilter(request, response);
                 return;
+            }
+
+        } else {
+            accessToken = authHeader.substring(BEARER_PREFIX.length());
         }
 
         String username = jwtService.getAccessClaims(accessToken).getSubject();

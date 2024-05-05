@@ -1,4 +1,4 @@
-package searchengine.services.util;
+package searchengine.util;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Encoders;

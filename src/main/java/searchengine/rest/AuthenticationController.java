@@ -1,92 +1,125 @@
 package searchengine.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.jwt.JwtAuthenticationResponse;
+import searchengine.dto.jwt.LogoutJwtResponse;
+import searchengine.dto.jwt.RefreshJwtRequest;
 import searchengine.dto.sign.SignInRequest;
 import searchengine.dto.sign.SignUpRequest;
+import searchengine.services.HttpCookieService;
 import searchengine.services.authentication.AuthenticationService;
-import searchengine.services.authentication.JwtService;
 
-@Controller
+import java.io.IOException;
+
+@RestController
 @RequestMapping(value = "/auth")
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final JwtService jwtService;
+    private final HttpCookieService httpCookieService;
 
     @Operation(summary = "Регистрация пользователя")
     @PostMapping("/sign-up")
-    public String signUp(@ModelAttribute SignUpRequest request, HttpServletResponse response) {
-        try {
-            JwtAuthenticationResponse jwtAuthenticationResponse = authenticationService.signUp(request);
+    public JwtAuthenticationResponse signUp(@RequestBody @Valid SignUpRequest request, HttpServletResponse response) {
+        JwtAuthenticationResponse jwtAuthenticationResponse = authenticationService.signUp(request);
 
-            response.addCookie(jwtService.createJwtAccessCookie(jwtAuthenticationResponse.getAccessToken()));
-            response.addCookie(jwtService.createJwtRefreshCookie(jwtAuthenticationResponse.getRefreshToken()));
+        response.addCookie(httpCookieService.createJwtAccessCookie(jwtAuthenticationResponse.getAccessToken()));
+        response.addCookie(httpCookieService.createJwtRefreshCookie(jwtAuthenticationResponse.getRefreshToken()));
 
-            return "redirect:/user/";
-
-        } catch (RuntimeException e) {
-            return "redirect:/sign-up";
-        }
+        return jwtAuthenticationResponse;
     }
 
     @Operation(summary = "Авторизация пользователя")
     @PostMapping("/sign-in")
-    public String signIn(@ModelAttribute SignInRequest request, HttpServletResponse response) {
-        try {
-            JwtAuthenticationResponse jwtAuthenticationResponse = authenticationService.signIn(request);
+    public JwtAuthenticationResponse signIn(@RequestBody @Valid SignInRequest request, HttpServletResponse response) {
+        JwtAuthenticationResponse jwtAuthenticationResponse = authenticationService.signIn(request);
 
-            response.addCookie(jwtService.createJwtAccessCookie(jwtAuthenticationResponse.getAccessToken()));
-            response.addCookie(jwtService.createJwtRefreshCookie(jwtAuthenticationResponse.getRefreshToken()));
+        response.addCookie(httpCookieService.createJwtAccessCookie(jwtAuthenticationResponse.getAccessToken()));
+        response.addCookie(httpCookieService.createJwtRefreshCookie(jwtAuthenticationResponse.getRefreshToken()));
 
-            return "redirect:/user/";
-        } catch (RuntimeException e) {
-            return "redirect:/";
-        }
+        return jwtAuthenticationResponse;
     }
 
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary = "Выход из системы")
     @GetMapping("/logout")
-    public String logout(HttpServletRequest request, HttpServletResponse response) {
-        Cookie accessCookie = jwtService.createJwtAccessCookie("");
+    public LogoutJwtResponse logout(HttpServletResponse response) throws IOException {
+        Cookie accessCookie = httpCookieService.createJwtAccessCookie("");
         accessCookie.setMaxAge(0);
         response.addCookie(accessCookie);
 
-        Cookie refreshCookie = jwtService.createJwtRefreshCookie("");
+        Cookie refreshCookie = httpCookieService.createJwtRefreshCookie("");
         refreshCookie.setMaxAge(0);
         response.addCookie(refreshCookie);
 
-        return "redirect:/";
+        response.sendRedirect("/");
+        return new LogoutJwtResponse(HttpStatus.OK, "logout successful");
     }
 
-    @Operation(summary = "Получить новый refresh токен")
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary = "Получить новый refresh токен из запроса")
+    @PostMapping("/refresh")
+    public JwtAuthenticationResponse refresh(
+            @RequestBody @Valid RefreshJwtRequest jwtRequest,
+            HttpServletResponse response
+    ) throws IOException {
+
+
+        JwtAuthenticationResponse jwtAuthenticationResponse = authenticationService.refresh(jwtRequest.getRefreshToken());
+        String accessToken = jwtAuthenticationResponse.getAccessToken();
+        String refreshToken = jwtAuthenticationResponse.getRefreshToken();
+
+        response.addCookie(httpCookieService.createJwtAccessCookie(accessToken));
+        response.addCookie(httpCookieService.createJwtRefreshCookie(refreshToken));
+        response.sendRedirect("/user/");
+        return new JwtAuthenticationResponse(accessToken, refreshToken);
+    }
+
+    @SecurityRequirement(name = "JWT")
+    @Operation(summary = "Получить новый refresh токен из куки")
     @GetMapping("/refresh")
-    public String refresh(HttpServletRequest request, HttpServletResponse response) {
+    public JwtAuthenticationResponse refresh(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
+
+        String refreshToken = null;
+
         Cookie[] cookies = request.getCookies();
-
-        if(cookies == null) {
-            return "redirect:/";
-        }
-
-        for(Cookie cookie : cookies) {
-            if(cookie.getName().equals(JwtService.REFRESH_COOKIE_NAME)) {
-                JwtAuthenticationResponse jwtAuthenticationResponse = authenticationService.refresh(cookie.getValue());
-                response.addCookie(jwtService.createJwtAccessCookie(jwtAuthenticationResponse.getAccessToken()));
-                response.addCookie(jwtService.createJwtRefreshCookie(jwtAuthenticationResponse.getRefreshToken()));
-                return "redirect:/user/";
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals(HttpCookieService.REFRESH_COOKIE_NAME)) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
             }
         }
 
-        return "redirect:/";
-    }
+        if (refreshToken == null) {
+            response.sendRedirect("/");
+            return new JwtAuthenticationResponse("", "");
+        }
 
+        JwtAuthenticationResponse jwtAuthenticationResponse = authenticationService.refresh(refreshToken);
+        String accessToken = jwtAuthenticationResponse.getAccessToken();
+        refreshToken = jwtAuthenticationResponse.getRefreshToken();
+
+        response.addCookie(httpCookieService.createJwtAccessCookie(accessToken));
+        response.addCookie(httpCookieService.createJwtRefreshCookie(refreshToken));
+        response.sendRedirect("/user/");
+        return new JwtAuthenticationResponse(accessToken, refreshToken);
+    }
 
 }

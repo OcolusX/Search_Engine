@@ -30,5 +30,9 @@ indexing-settings:
 jwt:
   secret:
     key:
-      access: +XcBbJEjbqbx9aZ+WKItBAhfq6yszfdZ7WDjaH/ukFg=
-      refresh: yynwwLF6Fgs9Sz4Jiq2nnzlHsv/C7wCY4GB8+pW97D8=
+      access:
+        value: +XcBbJEjbqbx9aZ+WKItBAhfq6yszfdZ7WDjaH/ukFg=
+        max-age: 300
+      refresh:
+        value: yynwwLF6Fgs9Sz4Jiq2nnzlHsv/C7wCY4GB8+pW97D8=
+        max-age: 3600

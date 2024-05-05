@@ -23,24 +23,23 @@ public class JwtService {
 
     private final SecretKey accessSecretKey;
     private final SecretKey refreshSecretKey;
-
-    public static final String ACCESS_COOKIE_NAME = "accessToken";
-    public static final String REFRESH_COOKIE_NAME = "refreshToken";
-    public static final String ACCESS_COOKIE_PATH = "/user/";
-    public static final String REFRESH_COOKIE_PATH = "/auth/";
-    public static final int ACCESS_MAX_AGE_SECONDS = 10;
-    public static final int REFRESH_MAX_AGE_SECONDS = 3600;
+    private final Integer accessMaxAge;
+    private final Integer refreshMaxAge;
 
     public JwtService(
-            @Value("${jwt.secret.key.access}") String accessSecretKey,
-            @Value("${jwt.secret.key.refresh}") String refreshSecretKey) {
+            @Value("${jwt.secret.key.access.value}") String accessSecretKey,
+            @Value("${jwt.secret.key.refresh.value}") String refreshSecretKey,
+            @Value("${jwt.secret.key.access.max-age}") Integer accessMaxAge,
+            @Value("${jwt.secret.key.access.max-age}") Integer refreshMaxAge) {
         this.accessSecretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(accessSecretKey));
         this.refreshSecretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(refreshSecretKey));
+        this.accessMaxAge = accessMaxAge;
+        this.refreshMaxAge = refreshMaxAge;
     }
 
     public String generateAccessToken(UserDetails userDetails) {
         final LocalDateTime now = LocalDateTime.now();
-        final Date expiration = Date.from(now.plusSeconds(ACCESS_MAX_AGE_SECONDS).atZone(ZoneId.systemDefault()).toInstant());
+        final Date expiration = Date.from(now.plusSeconds(accessMaxAge).atZone(ZoneId.systemDefault()).toInstant());
 
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof User customUserDetails) {
@@ -59,7 +58,7 @@ public class JwtService {
 
     public String generateRefreshToken(UserDetails userDetails) {
         final LocalDateTime now = LocalDateTime.now();
-        final Date expiration = Date.from(now.plusSeconds(REFRESH_MAX_AGE_SECONDS).atZone(ZoneId.systemDefault()).toInstant());
+        final Date expiration = Date.from(now.plusSeconds(refreshMaxAge).atZone(ZoneId.systemDefault()).toInstant());
 
         return Jwts.builder()
                 .subject(userDetails.getUsername())
@@ -99,22 +98,6 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-    }
-
-    public Cookie createJwtAccessCookie(String token) {
-        Cookie cookie = new Cookie(ACCESS_COOKIE_NAME, token);
-        cookie.setMaxAge(ACCESS_MAX_AGE_SECONDS);
-        cookie.setHttpOnly(true);
-        cookie.setPath(ACCESS_COOKIE_PATH);
-        return cookie;
-    }
-
-    public Cookie createJwtRefreshCookie(String token) {
-        Cookie cookie = new Cookie(REFRESH_COOKIE_NAME, token);
-        cookie.setMaxAge(REFRESH_MAX_AGE_SECONDS);
-        cookie.setHttpOnly(true);
-        cookie.setPath(REFRESH_COOKIE_PATH);
-        return cookie;
     }
 
 }

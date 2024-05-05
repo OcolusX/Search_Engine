@@ -9,13 +9,13 @@ import org.springframework.http.HttpStatus;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Schema(name = "Универсальная форма ответа")
-public class JwtResponse {
+@Schema(description = "Результат выхода из системы")
+public class LogoutJwtResponse {
 
-    @Schema(name = "Код ответа")
+    @Schema(description = "Код ответа")
     private HttpStatus statusCode;
 
-    @Schema(name = "Сообщение")
+    @Schema(description = "Сообщение")
     private String message;
 
 }

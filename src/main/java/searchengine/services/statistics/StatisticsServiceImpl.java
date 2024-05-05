@@ -24,7 +24,7 @@ public class StatisticsServiceImpl implements StatisticsService {
     private final RepositoryService repositoryService;
 
     @Override
-    public StatisticsResponse getStatistics() {
+    public StatisticsResponse getStatistics(boolean isAdmin) {
         String[] errors = {
                 "Ошибка индексации: главная страница сайта не доступна",
                 "Ошибка индексации: сайт не доступен",
@@ -32,10 +32,13 @@ public class StatisticsServiceImpl implements StatisticsService {
         };
 
         TotalStatistics total = new TotalStatistics();
-        total.setSites((int) repositoryService.getSiteRepository().count());
-        total.setIndexing(true);
-        total.setPages((int) repositoryService.getPageRepository().count());
-        total.setLemmas((int) repositoryService.getLemmaRepository().count());
+
+        if (isAdmin) {
+            total.setSites((int) repositoryService.getSiteRepository().count());
+            total.setIndexing(true);
+            total.setPages((int) repositoryService.getPageRepository().count());
+            total.setLemmas((int) repositoryService.getLemmaRepository().count());
+        }
 
         List<DetailedStatisticsItem> detailed = new ArrayList<>();
         List<Site> sitesList = repositoryService.getSiteRepository().findAll();
@@ -44,23 +47,26 @@ public class StatisticsServiceImpl implements StatisticsService {
             item.setName(site.getName());
             item.setUrl(site.getUrl());
 
-            Integer siteId = site.getId();
-            int pages = (int) repositoryService.getPageRepository().countBySiteId(siteId);
-            int lemmas = (int) repositoryService.getLemmaRepository().countBySiteId(siteId);
+            if (isAdmin) {
+                Integer siteId = site.getId();
+                int pages = (int) repositoryService.getPageRepository().countBySiteId(siteId);
+                int lemmas = (int) repositoryService.getLemmaRepository().countBySiteId(siteId);
 
-            item.setPages(pages);
-            item.setLemmas(lemmas);
-            item.setStatus(site.getStatus().name());
-            // TODO исправить отображение ошибок
-            item.setError(site.getLastError());
+                item.setPages(pages);
+                item.setLemmas(lemmas);
+                item.setStatus(site.getStatus().name());
+                // TODO исправить отображение ошибок
+                item.setError(site.getLastError());
 
-            // TODO исправить отображение даты и времени
-            LocalDateTime statusTime = site.getStatusTime();
-            ZonedDateTime zonedDateTime = statusTime.atZone(ZoneId.systemDefault());
-            item.setStatusTime(zonedDateTime.toEpochSecond());
+                // TODO исправить отображение даты и времени
+                LocalDateTime statusTime = site.getStatusTime();
+                ZonedDateTime zonedDateTime = statusTime.atZone(ZoneId.systemDefault());
+                item.setStatusTime(zonedDateTime.toEpochSecond());
+            }
 
             detailed.add(item);
         }
+
 
         StatisticsResponse response = new StatisticsResponse();
         StatisticsData data = new StatisticsData();
